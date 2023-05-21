@@ -47,6 +47,9 @@ def searchImage(browser, search_term, total_images):
         while result < total_images:
             # Scroll down to the bottom of the page
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            load_more_button = browser.find_element("css selector", ".mye4qd")
+            if load_more_button:
+                browser.execute_script("document.querySelector('.mye4qd').click();")
 
             # Find all images
             images = browser.find_elements("css selector",".Q4LuWd")
