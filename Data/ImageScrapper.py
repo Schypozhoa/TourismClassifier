@@ -43,18 +43,18 @@ def searchImage(browser, search_term, total_images):
 
         # Loop until the total images is reached
         result = 0
-        pbar = tqdm(desc=f"Downloading {term} images...", total=total_images)
+        src = []
+        pbar = tqdm(desc=f"Searching {term} images...", total=total_images)
         while result < total_images:
             # Scroll down to the bottom of the page
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
 
             # Find all images
             images = browser.find_elements("css selector",".Q4LuWd")
             for image in images:
                 # Check if the image have src or not
-                if image.get_attribute("src"):
-                    saveImage(image.get_attribute("src"), term, result+1)
+                if image.get_attribute("src") and image.get_attribute("src") not in src:
+                    src.append(image.get_attribute("src"))
                     pbar.update(1)
                     result += 1
 
@@ -62,9 +62,18 @@ def searchImage(browser, search_term, total_images):
                 if result >= total_images:
                     break
         pbar.close()
+        saveLocally(src, term, total_images)
         print(f"Done searching for {term} images, and successfuly saved {result} images\n")
+
     print("Done searching for all images")
     print(f"Images saved at {IMAGE_PATH}")
+
+def saveLocally(src, term, total_images):
+    pbar = tqdm(desc=f"Saving {term} images...", total=total_images)
+    for data in src:
+        saveImage(data, term, src.index(data)+1)
+        pbar.update(1)
+    pbar.close()
 
 def saveImage(data, term, index):
     # Define save path and image name
