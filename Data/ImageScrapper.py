@@ -4,10 +4,12 @@ import requests
 import base64
 import os
 import time
+from tqdm import tqdm
 
 # Dependencies:
 # selenium          (pypi, pip install selenium)
 # requests          (pypi, pip install requests)
+# tqdm              (pypi, pip install tqdm)
 # chrome-driver     (https://chromedriver.chromium.org/downloads) or use the provided one in the repository
 #
 # How to use:
@@ -41,10 +43,11 @@ def searchImage(browser, search_term, total_images):
 
         # Loop until the total images is reached
         result = 0
+        pbar = tqdm(desc=f"Downloading {term} images...", total=total_images)
         while result < total_images:
             # Scroll down to the bottom of the page
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
+            # time.sleep(3)
 
             # Find all images
             images = browser.find_elements("css selector",".Q4LuWd")
@@ -52,11 +55,13 @@ def searchImage(browser, search_term, total_images):
                 # Check if the image have src or not
                 if image.get_attribute("src"):
                     saveImage(image.get_attribute("src"), term, result+1)
+                    pbar.update(1)
                     result += 1
 
                 # Break the loop if the total images is reached
                 if result >= total_images:
                     break
+        pbar.close()
         print(f"Done searching for {term} images, and successfuly saved {result} images\n")
     print("Done searching for all images")
     print(f"Images saved at {IMAGE_PATH}")
@@ -93,8 +98,15 @@ def saveLinkImage(link, path):
 
 
 if __name__ == "__main__":
-    NUM_OF_IMAGES = 100
-    SEARCH_TERM = ["wisata gunung","wisata camping", "wisata pantai"]
+    NUM_OF_IMAGES = 150
+    SEARCH_TERM = [ "Wisata Gunung",
+                    "Wisata Pantai",
+                    "Wisata Danau",
+                    "Wisata Museum",
+                    "Wisata Campsite",
+                    "Wisata Taman",
+                    "Wisata Kebun Binatang",
+                    "Wisata Kolam Renang"]
     IMAGE_PATH = "C:/Users/Administrator/Desktop/Capstone/Data/AttractionDataset/"
     BROWSER_PATH = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
 
