@@ -3,7 +3,6 @@ from selenium.webdriver.chrome.options import Options
 import requests
 import base64
 import os
-import time
 from tqdm import tqdm
 
 # Dependencies:
@@ -52,15 +51,16 @@ def searchImage(browser, search_term, total_images):
             # Find all images
             images = browser.find_elements("css selector",".Q4LuWd")
             for image in images:
+                # Break the loop if the total images is reached
+                if result >= total_images:
+                    break
+
                 # Check if the image have src or not
                 if image.get_attribute("src") and image.get_attribute("src") not in src:
                     src.append(image.get_attribute("src"))
                     pbar.update(1)
                     result += 1
 
-                # Break the loop if the total images is reached
-                if result >= total_images:
-                    break
         pbar.close()
         saveLocally(src, term, total_images)
         print(f"Done searching for {term} images, and successfuly saved {result} images\n")
@@ -107,7 +107,7 @@ def saveLinkImage(link, path):
 
 
 if __name__ == "__main__":
-    NUM_OF_IMAGES = 150
+    NUM_OF_IMAGES = 200
     SEARCH_TERM = [ "Wisata Gunung",
                     "Wisata Pantai",
                     "Wisata Danau",
