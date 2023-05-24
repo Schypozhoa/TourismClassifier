@@ -19,7 +19,7 @@ import shutil
 # 5. Run the script
 
 
-def splitDataset(originalPath, ratio, savedPath):
+def splitDataset(originalPath, ratio, savedPath, splitted):
     # Check if the originalPath folder exist or not
     if not os.path.exists(originalPath):
         raise Exception("OriginalPath folder not found, please check the path")
@@ -27,8 +27,11 @@ def splitDataset(originalPath, ratio, savedPath):
     # Check if the savedPath folder exist or not
     if not os.path.exists(savedPath):
         os.makedirs(savedPath)
+    elif splitted:
+        return os.path.join(savedPath, "train"), os.path.join(savedPath, "test")
     else:
-        raise Exception("SavedPath folder already exist, please choose another folder")
+        raise Exception("""SavedPath folder already exist and ALREADY_SPLITTED = FALSE, 
+                        please choose another folder or change the ALREADY_SPLITTED variable to TRUE if you want to use the existing folder""")
     
     # Create train and test folder
     trainPath = os.path.join(savedPath, "train")
@@ -41,6 +44,7 @@ def splitDataset(originalPath, ratio, savedPath):
     # Get all the class name from the originalPath folder and create the folder in train and test folder
     classes = os.listdir(originalPath)
     for className in classes:
+        className = className[7:]
         trainClassPath = os.path.join(trainPath, className)
         testClassPath = os.path.join(testPath, className)
         if not os.path.exists(trainClassPath):
@@ -50,16 +54,18 @@ def splitDataset(originalPath, ratio, savedPath):
 
     # Split the dataset and keep the copy in the originalPath folder
     for className in classes:
-        classPath = os.path.join(originalPath, className)
+        classNameOriginal = className
+        className = className[7:]
+        classPathOriginal = os.path.join(originalPath, classNameOriginal)
         trainClassPath = os.path.join(trainPath, className)
         testClassPath = os.path.join(testPath, className)
-        images = os.listdir(classPath)
+        images = os.listdir(classPathOriginal)
         trainImages = images[:int(len(images)*ratio)]
         testImages = images[int(len(images)*ratio):]
         for image in trainImages:
-            shutil.copy(os.path.join(classPath, image), os.path.join(trainClassPath, image))
+            shutil.copy(os.path.join(classPathOriginal, image), os.path.join(trainClassPath, image))
         for image in testImages:
-            shutil.copy(os.path.join(classPath, image), os.path.join(testClassPath, image))
+            shutil.copy(os.path.join(classPathOriginal, image), os.path.join(testClassPath, image))
 
     return trainPath, testPath
 
@@ -152,20 +158,31 @@ def plotHistory(history):
 DATASET_PATH = "C:/Users/Administrator/Desktop/Capstone/Data/AttractionDataset/"
 SPLITTED_PATH = "C:/Users/Administrator/Desktop/Capstone/Data/AttractionDataset-Splitted/"
 PREDICTION_PATH = ""
-RATIO = 0.85
+RATIO = 0.8
+ALREADY_SPLITTED = True
 
 # Prepare the dataset
-trainPath, valPath = splitDataset(DATASET_PATH, RATIO, SPLITTED_PATH)
+trainPath, valPath = splitDataset(DATASET_PATH, RATIO, SPLITTED_PATH, ALREADY_SPLITTED)
 trainGen, valGen = trainValGen(trainPath, valPath)
 
+# Show 10 images from the trainGen ImageDataGenerator using matplotlib
+x, y = trainGen.next()
+fig = plt.figure(figsize=(10, 10))
+for i in range(0, 25):
+    image = x[i]
+    fig.add_subplot(5, 5, i+1)
+    plt.imshow(image)
+plt.show()
+
+
 # Variable for the model
-LEARNING_RATE = 0.001
-OPTIMIZER = optimizers.Adam(learning_rate=LEARNING_RATE)
-LOSS = losses.CategoricalCrossentropy()
-SAVED_MODEL_PATH = "C:/Users/Administrator/Desktop/Capstone/Model/Test.h5"
+# LEARNING_RATE = 0.001
+# OPTIMIZER = optimizers.Adam(learning_rate=LEARNING_RATE)
+# LOSS = losses.CategoricalCrossentropy()
+# SAVED_MODEL_PATH = "C:/Users/Administrator/Desktop/Capstone/Model/Test.h5"
 
 # Create the model
-model = createModel(OPTIMIZER, LOSS)
+# model = createModel(OPTIMIZER, LOSS)
 
 # Train the model
 #history = model.fit(
